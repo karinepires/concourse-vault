@@ -1,0 +1,9 @@
+FROM vault
+
+RUN apk update && \
+    apk add openssh openrc && \
+    mkdir -p /run/openrc/ && \
+    touch /run/openrc/softlevel && \
+    rc-update add sshd && \
+    sleep 15s && \
+    /etc/init.d/sshd restart

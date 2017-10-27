@@ -1,0 +1,7 @@
+FROM concourse/concourse
+
+RUN apt update && apt install ssh -yy
+
+ADD start.sh start.sh
+
+ENTRYPOINT ./start.sh

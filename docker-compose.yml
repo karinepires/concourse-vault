@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  concourse-db:
+    image: postgres:9.5
+    environment:
+      POSTGRES_DB: concourse
+      POSTGRES_USER: concourse
+      POSTGRES_PASSWORD: changeme
+      PGDATA: /database
+
+  concourse-web:
+    image: concourse-web
+#    command: web
+    links: [concourse-db, concourse-vault]
+    depends_on: [concourse-db, concourse-vault]
+    ports: ["8080:8080"]
+    volumes: ["./keys/web:/concourse-keys", "/var/run/docker.sock:/var/run/docker.sock"]
+    restart: unless-stopped # required so that it retries until concourse-db comes up
+    environment:
+      CONCOURSE_BASIC_AUTH_USERNAME: concourse
+      CONCOURSE_BASIC_AUTH_PASSWORD: changeme
+      CONCOURSE_EXTERNAL_URL: "${CONCOURSE_EXTERNAL_URL}"
+      CONCOURSE_POSTGRES_HOST: concourse-db
+      CONCOURSE_POSTGRES_USER: concourse
+      CONCOURSE_POSTGRES_PASSWORD: changeme
+      CONCOURSE_POSTGRES_DATABASE: concourse
+      CONCOURSE_VAULT_ROOT_TOKEN: "${CONCOURSE_VAULT_ROOT_TOKEN_ID}"
+      CONCOURSE_VAULT_ADDR: "http://0.0.0.0:8200"
+#      CONCOURSE_VAULT_URL: http://concourse-vault:8200
+#      CONCOURSE_VAULT_CLIENT_TOKEN: "${CONCOURSE_VAULT_CLIENT_TOKEN}"
+
+  concourse-worker:
+    image: concourse/concourse
+    privileged: true
+    links: [concourse-web]
+    depends_on: [concourse-web]
+    command: worker
+    volumes: ["./keys/worker:/concourse-keys"]
+    environment:
+      CONCOURSE_TSA_HOST: concourse-web
+
+  concourse-vault:
+    image: concourse-vault
+    ports: ["8200:8200"]
+    volumes: ["./keys/vault:/root/.ssh:rw"]
+#    volumes:
+#      - ./vault/file:/vault/file:rw
+#      - ./vault/config:/vault/config:rw
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "${CONCOURSE_VAULT_ROOT_TOKEN_ID}"
+#      VAULT_ADDR: "http://0.0.0.0:8200"
+# For now using dev mode
+#    entrypoint: vault server -config=/vault/config/
