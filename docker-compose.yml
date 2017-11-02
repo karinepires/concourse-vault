@@ -3,6 +3,7 @@ version: '3'
 services:
   concourse-db:
     image: postgres:9.5
+    restart: unless-stopped # boot with docker
     environment:
       POSTGRES_DB: concourse
       POSTGRES_USER: concourse
@@ -35,6 +36,7 @@ services:
     depends_on: [concourse-web]
     command: worker
     volumes: ["./keys/worker:/concourse-keys"]
+    restart: unless-stopped # boot with docker
     environment:
       CONCOURSE_TSA_HOST: concourse-web
 
@@ -44,5 +46,6 @@ services:
     volumes: ["./keys/vault:/root/.ssh:rw"]
     cap_add:
       - IPC_LOCK
+    restart: unless-stopped # boot with docker
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: "${CONCOURSE_VAULT_ROOT_TOKEN_ID}"

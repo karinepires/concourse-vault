@@ -4,6 +4,13 @@
 
 Follow the steps at [Concourse docker docs](https://concourse.ci/docker-repository.html).
 
+Clone the project and build docker image:
+```
+git clone https://github.com/karinepires/concourse-vault.git
+cd concourse-vault
+docker build -f concourse-web/dockerfile ./concourse-web/ -t concourse-web
+```
+
 Run the following to create concourse keys:
 
 ```
@@ -18,7 +25,7 @@ cp ./keys/worker/worker_key.pub ./keys/web/authorized_worker_keys
 cp ./keys/web/tsa_host_key.pub ./keys/worker
 ```
 
-Set up the URL:
+Set up the concourse URL:
 ```
 export CONCOURSE_EXTERNAL_URL=http://192.168.99.100:8080
 ```
@@ -35,7 +42,7 @@ export CONCOURSE_VAULT_ROOT_TOKEN_ID=my_secret_token
 
 Run it up:
 ```
-docker-compose up
+docker-compose up -d
 ```
 
 Set up with vault CLI the credentials your pipeline uses, as explained at [concourse cred docs](https://concourse.ci/creds.html).
