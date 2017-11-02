@@ -28,6 +28,8 @@ Create vault key:
 mkdir -p keys/vault
 ssh-keygen -t rsa -f ./keys/web/vault_key -N ''
 cp ./keys/web/vault_key.pub ./keys/vault/authorized_keys
+
+export CONCOURSE_VAULT_ROOT_TOKEN_ID=my_secret_token
 ```
 
 
@@ -36,4 +38,15 @@ Run it up:
 docker-compose up
 ```
 
-    
+Set up with vault CLI the credentials your pipeline uses, as explained at [concourse cred docs](https://concourse.ci/creds.html).
+
+For a ((foo_param)) variable in the `pipeline.yml`:
+```
+export VAULT_ADDR=http://your-concourse-vault-ip:8200
+vault auth concourse
+vault write /concourse/TEAM_NAME/PIPELINE_NAME/foo_param value=MY_FOO_VALUE
+```
+
+TODOS:
+* Create vault tokens that can only read (concourse one), and write (developer one, probably with the github auth).
+* Make the vault secrets persistent with docker volumes

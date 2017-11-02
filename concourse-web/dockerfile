@@ -1,6 +1,8 @@
+FROM vault
+
 FROM concourse/concourse
 
-RUN apt update && apt install ssh -yy
+COPY --from=vault /bin/vault /bin/vault
 
 ADD start.sh start.sh
 
